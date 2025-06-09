@@ -1,10 +1,12 @@
 import streamlit as st
+st.set_page_config(page_title="User Login / Sign Up", page_icon="🔐")  # MUST BE FIRST
+
 from services.supabase_client import supabase
 from services.user_data import create_user_profile
 from services.utils import button_to
 import time
-
-st.set_page_config(page_title="User Login / Sign Up", page_icon="🔐")
+from services.style_utils import apply_global_style
+apply_global_style(skip_config=True)
 
 # --- Connection Status ---
 try:
@@ -78,10 +80,20 @@ elif mode == "Sign Up":
     if "auth_id" in st.session_state:
         st.info("Complete your profile below.")
 
-        username = st.text_input("Choose a username", key="profile_username")
-        role = st.selectbox("Select your role", ["Analyst", "Project Owner"], key="profile_role")
+        username = st.text_input("Enter your Full Name", key="profile_username")
+        st.caption("Please enter your full name in the format: First Name, Last Name")
+        company_name = st.text_input("Enter your Company Name", key="profile_company")
+        st.caption("Please enter the full registered company name.")
+
+        role = st.selectbox("Select your role", ["Project Owner", "Analyst", "IC"], key="profile_role")
 
         if role == "Analyst":
+            pin = st.text_input("🔐 Enter internal PIN for Analyst role", type="password")
+            if pin != "1234":
+                st.warning("❌ Invalid PIN. Analyst role is for internal registration only.")
+                st.stop()
+
+        if role == "IC":
             pin = st.text_input("🔐 Enter internal PIN for Analyst role", type="password")
             if pin != "1234":
                 st.warning("❌ Invalid PIN. Analyst role is for internal registration only.")

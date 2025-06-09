@@ -1,10 +1,14 @@
 import streamlit as st
+st.set_page_config(page_title="📊 Dashboard", page_icon="📊")  # MUST BE FIRST
+
 from services.supabase_client import supabase
-from services.utils import logout_button, show_connection_status, button_to, require_login, get_user_profile
+from services.utils import logout_button, show_connection_status, button_to, require_login, get_user_profile, goto_page
+from services.style_utils import apply_global_style
+from services.project_access import fetch_projects_by_role
+from services.project_display import enrich_project_with_user_info, display_project_card
+from services.assignment_utils import assign_user_to_project
 
-st.set_page_config(page_title="📊 Dashboard", page_icon="📊")
-
-# --- Always show connection status ---
+apply_global_style(skip_config=True)
 show_connection_status()
 
 # --- Require login ---
@@ -13,42 +17,50 @@ require_login()
 # --- Load user profile ---
 profile = get_user_profile()
 if not profile:
-    st.error("❌ Failed to load user profile.")
+    st.error("⚠️ User profile not found. Please try logging in again.")
+    if st.button("🔐 Go to Login"):
+        goto_page("login")
     st.stop()
 
 # --- Display Profile Info ---
-st.title("📊 Dashboard")
-st.write(f"Welcome, **{profile['username']}**!")
+from services.utils import show_user_profile
 
-st.subheader("Your Profile")
-col1, col2 = st.columns(2)
-with col1:
-    st.markdown(f"**Username:** `{profile['username']}`")
-    st.markdown(f"**Email:** `{profile['email']}`")
-    st.markdown(f"**Role:** `{profile['role']}`")
-with col2:
-    st.markdown(f"**User ID:** `{profile['id']}`")
-    st.markdown(f"**Auth ID:** `{profile['auth_id']}`")
-    st.markdown(f"**Created At:** `{profile['created_at']}`")
+st.title("📊 Dashboard")
+st.success(f"Welcome, **{profile['username']}**!")
+
+show_user_profile(profile)
 
 # --- Display Projects ---
 st.markdown("---")
-st.subheader("Project Status")
+st.subheader("📁 Project Status")
+
 try:
-    projects = supabase.table("projects").select("id, project_name, project_type, country, status").eq("created_by", profile["auth_id"]).execute()
-    if projects.data:
-        for idx, project in enumerate(projects.data):
-            with st.expander(f"📌 {project['project_name']}"):
-                st.markdown(f"**Type:** `{project['project_type']}`")
-                st.markdown(f"**Country:** `{project['country']}`")
-                st.markdown(f"**Status:** `{project['status']}`")
-                if st.button("➡️ Open Project Cover", key=f"btn_{project['id']}"):
-                    st.session_state["project_id"] = project["id"]
-                    st.switch_page("pages/A1_cover.py")
+    projects = fetch_projects_by_role(profile)
+
+    if projects:
+        for idx, project in enumerate(projects):
+            project = enrich_project_with_user_info(project)
+            display_project_card(project, profile)  # ✅ Fixed: pass profile
+
+            # Show universal assignment interface for Analyst role
+            assign_user_to_project(
+                project,
+                profile,
+                role_to_assign="Analyst",
+                column_name="assigned_to",
+                label="Assign to Analyst",
+                status_on_assign="in_review"
+            )
     else:
         st.info("📝 No project registered yet.")
-        button_to("📋 Register a Project", "project_register")
+        if st.button("📋 Register a Project"):
+            goto_page("project_register")
+
 except Exception as e:
     st.error(f"❌ Failed to load project details: {e}")
 
 logout_button()
+st.markdown("---")
+st.subheader("Want to register another project?")
+if st.button("➕ Register New Project"):
+    goto_page("register")
