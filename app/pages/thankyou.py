@@ -18,7 +18,7 @@ st.markdown("""
 
     ---
     ### This product was designed by **Xinzhi Yao**
-    - Contact me now to book a demo: [xinzhi.yao@pm.me](mailto:xinzhi.yao@pm.me)
+    - Contact me now to book a demo
 
     ### Next Updates:
     Here are the upcoming updates and features that will be implemented:
