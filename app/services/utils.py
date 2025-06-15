@@ -52,7 +52,12 @@ def require_login():
         if st.button("🔐 Go to Login"):
             goto_page("login")
         st.stop()
-
+def require_signup():
+    if "auth_id" not in st.session_state:
+        st.warning("🔒 Please sign up to continue.")
+        if st.button("📝 Go to Login"):
+            goto_page("login")
+        st.stop()
 
 def get_user_profile():
     if "auth_id" not in st.session_state:
