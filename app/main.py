@@ -2,7 +2,6 @@ import streamlit as st
 from services.utils import show_connection_status, goto_page
 from services.style_utils import apply_global_style
 
-# Apply global styles and show connection status
 apply_global_style(skip_config=True)
 show_connection_status()
 
@@ -28,18 +27,12 @@ This platform empowers climate finance stakeholders to explore, register, and ev
 - Use implies acknowledgment of internal terms.
 """)
 
-# --- Access Buttons ---
+# --- Access Button ---
 st.markdown("---")
 st.subheader("🔐 Access the Platform")
 
-col1, col2 = st.columns(2)
-with col1:
-    if st.button("🔓 Log In"):
-        goto_page("login")  # Navigate to the login page
-
-with col2:
-    if st.button("📝 Sign Up"):
-        goto_page("signup")  # Navigate to the sign-up page
+if st.button("🔐 Log In / Sign Up"):
+    goto_page("login")  # Navigate to the combined login/signup page
 
 # --- Footer ---
 st.markdown("---")

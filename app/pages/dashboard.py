@@ -54,7 +54,7 @@ try:
     else:
         st.info("📝 No project registered yet.")
         if st.button("📋 Register a Project"):
-            goto_page("project_register")
+            goto_page("register")
 
 except Exception as e:
     st.error(f"❌ Failed to load project details: {e}")
